@@ -4,11 +4,18 @@
   "version": "0.1.0",
   "description": "Read faster, feel calmer.",
   "permissions": ["activeTab", "scripting", "storage"],
-  "action": { "default_popup": "popup.html" },
+  "action": {
+    "default_popup": "popup.html"
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "js": [
+        "features/tone.js",
+        "features/simplify.js",
+        "features/calm.js",
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
   ]
