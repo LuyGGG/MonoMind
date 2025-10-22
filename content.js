@@ -1,65 +1,56 @@
-// content.js
-importScripts?.()
+// MonoMind content router + Origin Trial injector
+// Ensures Rewriter API availability for all pages
 
-async function ensureAI() {
+const ORIGIN_TRIAL_TOKEN = "AsTOdLAXt/0rthNXcwBWF67CysqljArFiGCLDIBgstKYFQ7AxuruD2//4xcH4LiF88SQPqVVW8gqqNfasNY1Nw0AAABueyJvcmlnaW4iOiJjaHJvbWUtZXh0ZW5zaW9uOi8vZ2FoZ2NpZmtsaW1tYmthbXBnbmJjcG5ucGlvZ2JraXAiLCJmZWF0dXJlIjoiQUlSZXdyaXRlckFQSSIsImV4cGlyeSI6MTc2OTQ3MjAwMH0="; 
+
+// 注入 Origin Trial token
+(() => {
   try {
-    if (!self.ai || !ai.summarizer) return { ok: false, status: 'no_ai' }
-    const status = await ai.summarizer.availability()
-    const ok = status === 'available' || status === 'downloadable'
-    return { ok, status }
-  } catch (e) {
-    return { ok: false, status: 'error', error: String(e) }
+    const existing = document.querySelector('meta[http-equiv="origin-trial"]');
+    if (!existing) {
+      const meta = document.createElement("meta");
+      meta.httpEquiv = "origin-trial";
+      meta.content = ORIGIN_TRIAL_TOKEN;
+      document.head?.appendChild(meta);
+      console.log("Origin Trial token injected for Rewriter API.");
+    }
+  } catch (err) {
+    console.warn("⚠️ Failed to inject origin trial token:", err);
   }
-}
+})();
 
+// 消息路由：处理 popup 指令
 chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
   (async () => {
     try {
-      const { action } = req || {}
+      const { action } = req || {};
 
-      // ---- Tone ----
-      if (action === 'tone:apply') {
-        const options = req.options || { level: 'medium' }
-        if (!window.MonoMindTone?.apply) return sendResponse({ ok: false, error: 'MonoMindTone not loaded' })
-        const out = window.MonoMindTone.apply(options)
-        return sendResponse({ ok: true, data: out })
+      if (action.startsWith("tone:")) {
+        if (!window.MonoMindTone) return sendResponse({ ok: false, error: "Tone module not loaded" });
+        if (action === "tone:apply") return sendResponse(await window.MonoMindTone.apply());
+        if (action === "tone:revert") return sendResponse(window.MonoMindTone.revert());
+        if (action === "tone:state") return sendResponse({ ok: true, applied: window.MonoMindTone.isApplied() });
       }
 
-      if (action === 'tone:revert') {
-        if (!window.MonoMindTone?.revert) return sendResponse({ ok: false, error: 'MonoMindTone not loaded' })
-        const out = window.MonoMindTone.revert()
-        return sendResponse({ ok: true, data: out })
-      }
-
-      if (action === 'tone:state') {
-        const applied = !!window.MonoMindTone?.isApplied?.()
-        return sendResponse({ ok: true, applied })
-      }
-
-      // ---- Simplify（若依赖 AI 再检查）----
-      if (action === 'simplify_page') {
+      if (action === "simplify_page") {
         if (!window.MonoMindSimplify?.simplifyCurrentPage)
-          return sendResponse({ ok: false, error: 'MonoMindSimplify not loaded' })
-
-        const ai = await ensureAI()
-        if (!ai.ok) return sendResponse({ ok: false, error: `AI ${ai.status}` })
-
-        const out = await window.MonoMindSimplify.simplifyCurrentPage()
-        return sendResponse({ ok: true, data: out })
+          return sendResponse({ ok: false, error: "Simplify not loaded" });
+        const out = await window.MonoMindSimplify.simplifyCurrentPage();
+        return sendResponse({ ok: true, data: out });
       }
 
-      // ---- Calm ----
-      if (action === 'calm_mode') {
+      if (action === "calm_mode") {
         if (!window.MonoMindCalm?.toggleCalm)
-          return sendResponse({ ok: false, error: 'MonoMindCalm not loaded' })
-        const out = window.MonoMindCalm.toggleCalm()
-        return sendResponse({ ok: true, data: out })
+          return sendResponse({ ok: false, error: "Calm not loaded" });
+        const out = window.MonoMindCalm.toggleCalm();
+        return sendResponse({ ok: true, data: out });
       }
 
-      return sendResponse({ ok: false, error: 'unknown_action' })
+      return sendResponse({ ok: false, error: "unknown_action" });
     } catch (err) {
-      return sendResponse({ ok: false, error: String(err) })
+      console.error("Content handler error:", err);
+      return sendResponse({ ok: false, error: String(err) });
     }
-  })()
-  return true
-})
+  })();
+  return true;
+});
