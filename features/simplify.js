@@ -1,38 +1,76 @@
-// 暴露到 window，便于 content.js 调用
-window.MonoMindSimplify = {
-  async simplifyCurrentPage() {
-    // 1) 抽取正文（先用最简单策略，后续你再优化）
-    const text = Array.from(document.querySelectorAll('article, main, p'))
-      .slice(0, 200) // 防止过长
-      .map(el => el.innerText.trim())
-      .filter(Boolean)
-      .join('\n\n')
-      .slice(0, 8000);
+// features/simplify.js
+// Summarize the current page into key points and show them in an alert.
 
-    // 2) Summarizer 可用性
-    const st = await ai.summarizer.availability();
-    if (st === 'downloadable' && !navigator.userActivation.isActive) {
-      return {note:'需要点击触发下载（用户激活）'};
-    }
+window.MonoMindSimplify = window.MonoMindSimplify || {};
 
-    // 3) 创建 summarizer 并摘要（默认配置即可起跑）
-    const summarizer = await ai.summarizer.create();
-    const res = await summarizer.summarize(text, {
-      type: "key-points",  // or "teaser" / "paragraph"
-      format: "markdown",  // or "plain-text"
-      length: "short"      // "short" | "medium" | "long"
+window.MonoMindSimplify.summarizeToAlert = async function () {
+  // 1) Feature detection
+  if (!('Summarizer' in self)) {
+    alert("❌ Summarizer API not supported in this browser or context.");
+    return;
+  }
+
+  // 2) Check availability
+  let availability;
+  try {
+    availability = await Summarizer.availability();
+  } catch (err) {
+    alert("💥 Could not query Summarizer availability:\n" + err.message);
+    console.error(err);
+    return;
+  }
+
+  if (availability === 'unavailable') {
+    alert("❌ Model unavailable on this device.");
+    return;
+  }
+
+  // 3) Create the summarizer (must be called during a user gesture)
+  //    If model is 'downloadable', creation will trigger download.
+  if (!navigator.userActivation.isActive) {
+    alert("⚠️ Please click the MonoMind button again to allow model init/download.");
+    return;
+  }
+
+  let summarizer;
+  try {
+    summarizer = await Summarizer.create({
+      type: 'key-points',
+      format: 'markdown',     // Chrome returns bullet points in markdown
+      length: 'short',        // 3 bullets (per Chrome’s implementation)
+      expectedInputLanguages: ['en'],
+      expectedContextLanguages: ['en'],
+      outputLanguage: "en",
+      monitor(m) {
+        m.addEventListener('downloadprogress', (e) => {
+          // e.loaded is 0..1; you could surface progress if you want
+          console.debug(`Gemini Nano download: ${Math.round(e.loaded * 100)}%`);
+        });
+      }
+    });
+  } catch (err) {
+    alert("💥 Could not create Summarizer:\n" + err.message);
+    console.error(err);
+    return;
+  }
+
+  // 4) Prepare input text (use rendered text, not HTML)
+  const text = (document.body?.innerText || '').trim().slice(0, 15000);
+  if (!text) {
+    alert("ℹ️ Nothing to summarize on this page.");
+    return;
+  }
+
+  // 5) Summarize and show
+  try {
+    const summary = await summarizer.summarize(text, {
+      context: "Summarise the main points for a busy reader."
     });
 
-    // 4) 把结果渲染到页面（最简单：顶部插入一个浮层）
-    const panel = document.createElement('div');
-    panel.style.cssText = `
-      position: fixed; right: 16px; top: 16px; z-index: 999999;
-      width: 380px; max-height: 60vh; overflow:auto;
-      background: #111; color: #fff; padding: 12px; border-radius: 12px; box-shadow:0 6px 24px rgba(0,0,0,.3)
-    `;
-    panel.innerHTML = `<b>MonoMind · 摘要</b><hr><div>${res.summary.replace(/\n/g,'<br>')}</div>`;
-    document.body.appendChild(panel);
-
-    return {summary: res.summary};
+    // Alerts show plain text; markdown bullets render as lines starting with '-'
+    alert(summary);
+  } catch (err) {
+    alert("💥 Summarization failed:\n" + err.message);
+    console.error(err);
   }
 };
