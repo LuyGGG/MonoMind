@@ -1,35 +1,74 @@
-importScripts?.(); // 兼容性占位，无需改
+// content.js
 
 async function ensureAI() {
-  // Summarizer / Prompt 可选其一
-  if (!self.ai || !ai.summarizer) return {ok:false, status:'no_ai'};
-  const status = await ai.summarizer.availability(); // or ai.languageModel.availability()
-  return {ok: status === 'available' || status === 'downloadable', status};
+  if (!("Summarizer" in self)) return { ok: false, status: "not_supported" };
+  const status = await Summarizer.availability();
+  const ok = status === "available" || status === "downloadable";
+  return { ok, status };
 }
 
 chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
   (async () => {
-    const {action, payload} = req;
-    const {ok, status} = await ensureAI();
-    if (!ok) { sendResponse({ok:false, error:`AI ${status}`}); return; }
+    try {
+      const { action } = req || {};
 
-    switch(action){
-      case 'simplify_page':
-        // 👉 调用你负责的模块
-        const out1 = await window.MonoMindSimplify.simplifyCurrentPage();
-        sendResponse({ok:true, data: out1}); break;
+      // ---- Simplify ----
+      if (action === "simplify_page") {
+        const url = chrome.runtime.getURL("features/simplify.js");
+        if (!url || url.startsWith("chrome-extension://invalid")) {
+          sendResponse({
+            ok: false,
+            error:
+              "Stale content script. Refresh this tab after reloading the extension.",
+          });
+          return;
+        }
+        const script = document.createElement("script");
+        script.src = url;
+        script.onload = () => {
+          const runner = document.createElement("script");
+          runner.textContent =
+            "window.MonoMindSimplify && window.MonoMindSimplify.summarizeToAlert();";
+          (document.head || document.documentElement).appendChild(runner);
+          runner.remove();
+        };
+        (document.head || document.documentElement).appendChild(script);
+        sendResponse({
+          ok: true,
+          data: "simplify.js injected & executed on click",
+        });
+        return;
+      }
 
-      case 'soften_tone':
-        const out2 = await window.MonoMindTone.softenSelectedText();
-        sendResponse({ok:true, data: out2}); break;
+      // ---- Tone ----
+      if (action === "tone:apply") {
+        const options = req.options || { level: "medium" };
+        if (!window.MonoMindTone?.apply)
+          return sendResponse({ ok: false, error: "MonoMindTone not loaded" });
+        const out = window.MonoMindTone.apply(options);
+        return sendResponse({ ok: true, data: out });
+      }
 
-      case 'calm_mode':
-        const out3 = await window.MonoMindCalm.toggleCalm();
-        sendResponse({ok:true, data: out3}); break;
+      if (action === "tone:revert") {
+        if (!window.MonoMindTone?.revert)
+          return sendResponse({ ok: false, error: "MonoMindTone not loaded" });
+        const out = window.MonoMindTone.revert();
+        return sendResponse({ ok: true, data: out });
+      }
 
-      default:
-        sendResponse({ok:false, error:'unknown_action'});
+      // ---- Calm ----
+      if (action === "calm_mode") {
+        if (!window.MonoMindCalm?.toggleCalm)
+          return sendResponse({ ok: false, error: "MonoMindCalm not loaded" });
+        const out = window.MonoMindCalm.toggleCalm();
+        return sendResponse({ ok: true, data: out });
+      }
+
+      return sendResponse({ ok: false, error: "unknown_action" });
+    } catch (err) {
+      return sendResponse({ ok: false, error: String(err) });
     }
   })();
-  return true; // keep channel for async
+
+  return true; // keep channel open for async
 });

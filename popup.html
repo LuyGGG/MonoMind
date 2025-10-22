@@ -1,18 +1,22 @@
 <!doctype html>
-<html>
+<html lang="zh-CN">
 <head>
-  <meta charset="utf-8"/>
-  <link rel="stylesheet" href="styles.css">
-  <style>button{margin:4px}</style>
+  <meta charset="utf-8" />
+  <title>MonoMind</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <h3>MonoMind</h3>
-  <div>
-    <button id="btn-simplify">内容简化</button>
-    <button id="btn-tone">语气柔化</button>
-    <button id="btn-calm">安静模式</button>
+
+  <div class="row" role="group" aria-label="快捷功能">
+    <button id="btn-simplify" title="将页面内容简化为更易读版本">内容简化</button>
+    <button id="btn-tone" title="将强烈/刺激的语气替换为更平和的表达">语气柔化</button>
+    <button id="btn-calm" title="降低视觉刺激（减少动画/闪烁等）">安静模式</button>
   </div>
-  <pre id="log"></pre>
+
+  <pre id="log" role="status" aria-live="polite"></pre>
+
   <script src="popup.js"></script>
 </body>
 </html>
