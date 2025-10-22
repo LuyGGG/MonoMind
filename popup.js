@@ -8,4 +8,18 @@ async function send(action, payload={}) {
 
 document.getElementById('btn-simplify').onclick = () => send('simplify_page');
 document.getElementById('btn-tone').onclick     = () => send('soften_tone');
-document.getElementById('btn-calm').onclick     = () => send('calm_mode');
+
+document.getElementById('btn-calm').onclick = async () => {
+  // 使用已有的 send 函数，它会正确处理消息发送和响应显示
+  send('calm_mode');
+};
+
+(async () => {
+  // 可选：在 popup 中也测一次可用性
+  if ('LanguageModel' in self) {
+    const a = await LanguageModel.availability();
+    document.getElementById('aiStatus').textContent = a;
+  } else {
+    document.getElementById('aiStatus').textContent = 'no-LanguageModel';
+  }
+})();

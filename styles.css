@@ -1,0 +1,5 @@
+/* styles.css */
+.calm-on img, .calm-on video, .calm-on canvas { filter: grayscale(60%) brightness(.9); }
+.calm-on * { animation: none !important; transition: none !important; }
+.calm-blur { filter: blur(6px) grayscale(80%) brightness(.85) !important; }
+.calm-hide { display:none !important; }
