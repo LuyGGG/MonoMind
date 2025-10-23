@@ -1,3 +1,6 @@
+// Set page language to browser language (fallback to English) — run early
+document.documentElement.lang = navigator.language || "en";
+
 const log = (m) => {
   const el = document.getElementById("log");
   if (!el) return;
