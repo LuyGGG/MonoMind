@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="">
 <head>
   <meta charset="utf-8" />
   <title>MonoMind</title>
@@ -13,14 +13,19 @@
 <body>
   <h3>MonoMind</h3>
 
-  <div class="row" role="group" aria-label="快捷功能">
-    <button id="btn-simplify" title="将页面内容简化为更易读版本">内容简化</button>
-    <button id="btn-tone" title="将强烈刺激的语气替换为更平和的表达">语气柔化</button>
-    <button id="btn-calm" title="降低视觉刺激减少动画闪烁等">安静模式</button>
+  <div class="row" role="group" aria-label="Quick actions">
+    <button id="btn-simplify" title="Simplify page content for easier reading">Simplify Content</button>
+    <button id="btn-tone" title="Replace emotionally intense expressions with calmer ones">Soften Tone</button>
+    <button id="btn-calm" title="Reduce visual stimulation (animations, flashing, etc.)">Calm Mode</button>
   </div>
 
   <pre id="log" role="status" aria-live="polite"></pre>
+  <p class="muted">Read calmer, feel safer.</p>
 
   <script src="popup.js"></script>
+  <script>
+    // Automatically set document language based on browser preference
+    document.documentElement.lang = navigator.language || "en";
+  </script>
 </body>
 </html>
