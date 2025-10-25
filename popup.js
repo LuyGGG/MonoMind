@@ -1,17 +1,18 @@
-// Set page language to browser language (fallback to English) — run early
-document.documentElement.lang = navigator.language || "en";
+// popup.js
+document.documentElement.lang = navigator.language || "zh";
 
 const log = (m) => {
   const el = document.getElementById("log");
-  if (!el) return;
-  el.textContent = typeof m === "string" ? m : JSON.stringify(m, null, 2);
+  if (el) el.textContent = typeof m === "string" ? m : JSON.stringify(m, null, 2);
 };
 
+// 获取当前活动标签页
 async function activeTab() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   return tab;
 }
 
+// 禁止注入的 URL
 function isRestrictedUrl(url = "") {
   return (
     url.startsWith("chrome://") ||
@@ -21,6 +22,7 @@ function isRestrictedUrl(url = "") {
   );
 }
 
+// 发送指令到 content.js
 async function send(action, payload = {}) {
   const tab = await activeTab();
   const url = tab?.url || "";
@@ -35,6 +37,7 @@ async function send(action, payload = {}) {
     log(res);
     return res;
   } catch {
+    // 如果 content 未注入，则重新注入
     try {
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
@@ -42,8 +45,8 @@ async function send(action, payload = {}) {
           "features/tone_rewriter.js",
           "features/simplify.js",
           "features/calm.js",
-          "content.js"
-        ]
+          "content.js",
+        ],
       });
       const res2 = await chrome.tabs.sendMessage(tab.id, { action, ...payload });
       log(res2);
@@ -55,14 +58,15 @@ async function send(action, payload = {}) {
   }
 }
 
+// Tone 按钮 UI 切换
 function setToneButtonUI(applied) {
   const btn = document.getElementById("btn-tone");
   if (!btn) return;
   btn.textContent = applied ? "撤销语气柔化" : "语气柔化";
-  btn.setAttribute("aria-pressed", applied ? "true" : "false");
   btn.dataset.applied = applied ? "1" : "0";
 }
 
+// Tone 逻辑
 async function toggleTone() {
   const state = await send("tone:state");
   const applied = !!state?.applied;
@@ -75,6 +79,7 @@ async function toggleTone() {
   }
 }
 
+// 初始化绑定
 document.addEventListener("DOMContentLoaded", async () => {
   const state = await send("tone:state");
   setToneButtonUI(!!state?.applied);
