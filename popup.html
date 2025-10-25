@@ -1,19 +1,41 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <link rel="stylesheet" href="styles.css">
-  <style>button{margin:4px}</style>
+  <meta charset="utf-8" />
+  <title>CalmPage</title>
+  <meta http-equiv="Content-Security-Policy"
+        content="script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline'">
+  <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
-  <h3>MonoMind</h3>
-  <div>AI: <span id="aiStatus">checking…</span></div>
-  <div>
-    <button id="btn-simplify">内容简化</button>
-    <button id="btn-tone">语气柔化</button>
-    <button id="btn-calm">安静模式</button>
-  </div>
-  <pre id="log"></pre>
+<body class="popup-root">
+  <header>
+    <h1>CalmPage</h1>
+    <p class="sub">Lower visual stimuli for calmer reading</p>
+  </header>
+
+  <section class="btns">
+    <button id="btnSummarize" class="btn" disabled title="Placeholder">📝 Summarize</button>
+    <button id="btnSoftTone" class="btn" disabled title="Placeholder">🌤️ Soft tone</button>
+    <button id="btnRemoveToggle" class="btn btn-primary">🧹 Remove image / popup / animation</button>
+    <button id="btnOptimize" class="btn">✨ Optimize (AI)</button>
+  </section>
+
+  <section class="result">
+    <div class="row">
+      <button id="btnApplyCss" class="btn btn-ok" disabled>✅ Apply AI CSS</button>
+      <button id="btnUndoCss" class="btn btn-warn" disabled>↩️ Undo AI CSS</button>
+    </div>
+    <details id="details">
+      <summary>Analysis & Result</summary>
+      <pre id="log" class="log">No result yet</pre>
+    </details>
+  </section>
+
+  <footer class="foot">Note: Optimize analyzes the visible area only.</footer>
+
+  <!-- Prompt helper moved to /api -->
+  <script src="api/prompt.js"></script>
+  <script src="features/optimize.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

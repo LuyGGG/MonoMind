@@ -1,33 +1,68 @@
-// 简单日志工具
-const log = (...a) => console.log('[Monomind/content]', ...a);
+// Handles messages from popup, shows in-page toast, applies/undoes AI CSS.
 
-chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
-  (async () => {
-    const { action, payload } = req;
-
-    // 可选：调 AI 可用性（如果某个功能必须 AI 才启用）
-    if (action !== 'calm_mode_rules_only') {
-      const { ok, status } = await self.MonoMindAI.lmAvailability();
-      log('AI availability:', ok, status);
-      if (!ok) { sendResponse({ ok:false, error:`AI ${status}` }); return; }
-    }
-
+(function () {
+  function toast(msg = '', ms = 2200) {
     try {
-      if (action === 'simplify_page') {
-        const data = await self.MonoMindSimplify.simplifyCurrentPage();
-        sendResponse({ ok:true, data });
-      } else if (action === 'soften_tone') {
-        const data = await self.MonoMindTone.softenSelectedText(payload?.tone || 'neutral');
-        sendResponse({ ok:true, data });
-      } else if (action === 'calm_mode') {
-        const data = await self.MonoMindCalm.toggleCalm();
-        sendResponse({ ok:true, data });
-      } else {
-        sendResponse({ ok:false, error:'unknown_action' });
+      let el = document.getElementById('__calmpage_toast');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = '__calmpage_toast';
+        document.documentElement.appendChild(el);
       }
-    } catch (e) {
-      sendResponse({ ok:false, error: String(e?.message || e) });
+      el.textContent = msg;
+      el.style.opacity = '1';
+      clearTimeout(el.__t);
+      el.__t = setTimeout(() => { el.style.opacity = '0'; }, ms);
+    } catch (_) {}
+  }
+
+  const STYLE_ID = '__calmpage_ai_style__';
+
+  function applyCss(cssText) {
+    let s = document.getElementById(STYLE_ID);
+    if (!s) {
+      s = document.createElement('style');
+      s.id = STYLE_ID;
+      s.type = 'text/css';
+      document.head.appendChild(s);
     }
-  })();
-  return true; // 允许异步 sendResponse
-});
+    s.textContent = cssText || '';
+    toast('✅ AI CSS applied');
+    return true;
+  }
+
+  function undoCss() {
+    const s = document.getElementById(STYLE_ID);
+    if (s && s.parentNode) {
+      s.parentNode.removeChild(s);
+      toast('↩️ AI CSS undone');
+      return true;
+    }
+    toast('ℹ️ No AI CSS to undo');
+    return false;
+  }
+
+  chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    if (!msg || !msg.type) return;
+
+    if (msg.type === 'CALM_TOGGLE_REMOVE') {
+      const r = window.__CalmPageImageFeature?.toggleRemove();
+      if (r?.mode === 'removed') toast(`🧹 Removed ${r.count} elements`);
+      if (r?.mode === 'restored') toast(`🧩 Restored ${r.count} elements`);
+      sendResponse?.({ ok: true, ...r });
+      return true;
+    }
+
+    if (msg.type === 'CALM_APPLY_CSS') {
+      const ok = applyCss(msg.css || '');
+      sendResponse?.({ ok });
+      return true;
+    }
+
+    if (msg.type === 'CALM_UNDO_CSS') {
+      const ok = undoCss();
+      sendResponse?.({ ok });
+      return true;
+    }
+  });
+})();
