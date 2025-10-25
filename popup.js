@@ -1,18 +1,18 @@
-// popup.js
-document.documentElement.lang = navigator.language || "zh";
+// Set popup language dynamically based on browser settings
+document.documentElement.lang = navigator.language || "en";
 
 const log = (m) => {
   const el = document.getElementById("log");
   if (el) el.textContent = typeof m === "string" ? m : JSON.stringify(m, null, 2);
 };
 
-// 获取当前活动标签页
+// Get the current active tab
 async function activeTab() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   return tab;
 }
 
-// 禁止注入的 URL
+// Disallow injection on restricted pages
 function isRestrictedUrl(url = "") {
   return (
     url.startsWith("chrome://") ||
@@ -22,13 +22,13 @@ function isRestrictedUrl(url = "") {
   );
 }
 
-// 发送指令到 content.js
+// Send message to content.js
 async function send(action, payload = {}) {
   const tab = await activeTab();
   const url = tab?.url || "";
 
   if (isRestrictedUrl(url)) {
-    log("当前页面不允许注入（如 chrome://、商店、PDF 预览）。请在普通网页使用。");
+    log("This page type cannot be modified (e.g., Chrome pages, Store, or PDF preview). Please use it on a normal webpage.");
     return { ok: false, error: "restricted_page" };
   }
 
@@ -37,7 +37,7 @@ async function send(action, payload = {}) {
     log(res);
     return res;
   } catch {
-    // 如果 content 未注入，则重新注入
+    // Re-inject scripts if content.js isn’t loaded yet
     try {
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
@@ -52,34 +52,51 @@ async function send(action, payload = {}) {
       log(res2);
       return res2;
     } catch (err2) {
-      log(`发送失败：${err2?.message || err2}`);
+      log(`Failed to send: ${err2?.message || err2}`);
       return { ok: false, error: String(err2?.message || err2) };
     }
   }
 }
 
-// Tone 按钮 UI 切换
+// Update Tone button UI state
 function setToneButtonUI(applied) {
   const btn = document.getElementById("btn-tone");
   if (!btn) return;
-  btn.textContent = applied ? "撤销语气柔化" : "语气柔化";
+  btn.textContent = applied ? "Revert Tone" : "Soften Tone";
   btn.dataset.applied = applied ? "1" : "0";
+  btn.disabled = false; // re-enable after completion
 }
 
-// Tone 逻辑
+// Tone toggle logic
 async function toggleTone() {
-  const state = await send("tone:state");
-  const applied = !!state?.applied;
-  if (applied) {
-    const r = await send("tone:revert");
-    if (r?.ok) setToneButtonUI(false);
-  } else {
-    const r = await send("tone:apply");
-    if (r?.ok) setToneButtonUI(true);
+  const btn = document.getElementById("btn-tone");
+  if (!btn) return;
+
+  // Prevent double-click
+  btn.disabled = true;
+  btn.textContent = "Processing...";
+
+  try {
+    const state = await send("tone:state");
+    const applied = !!state?.applied;
+
+    if (applied) {
+      const r = await send("tone:revert");
+      if (r?.ok) setToneButtonUI(false);
+      else log("Failed to revert tone.");
+    } else {
+      const r = await send("tone:apply");
+      if (r?.ok) setToneButtonUI(true);
+      else log("Tone softening failed.");
+    }
+  } catch (err) {
+    log(`${err.message}`);
+  } finally {
+    btn.disabled = false;
   }
 }
 
-// 初始化绑定
+// Initialize event bindings
 document.addEventListener("DOMContentLoaded", async () => {
   const state = await send("tone:state");
   setToneButtonUI(!!state?.applied);
