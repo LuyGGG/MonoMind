@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MonoMind",
-  "version": "0.1.0",
-  "description": "Read faster, feel calmer.",
+  "version": "0.4.2",
+  "description": "Read calmer, feel safer — autism-friendly tone softening and content simplification using Chrome's Rewriter & Summarizer APIs (Gemini Nano).",
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": ["<all_urls>"],
   "action": {
@@ -12,8 +12,24 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "js": [
+        "features/tone_rewriter.js",
+        "features/simplify.js",
+        "features/calm.js",
+        "content.js"
+      ],
       "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "features/simplify.js",
+        "features/tone_rewriter.js",
+        "features/calm.js",
+        "features/prompts/*.txt"
+      ],
+      "matches": ["<all_urls>"]
     }
   ]
 }
