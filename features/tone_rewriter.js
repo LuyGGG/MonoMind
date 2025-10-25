@@ -9,6 +9,7 @@
 
   const ORIGINAL_TEXT = new WeakMap();
   const PROCESSED = new WeakSet();
+  const REWRITTEN_NODES = new Set(); // 可遍历集合，追踪被改写节点
   let TONE_APPLIED = false;
   let rewriterInstance = null;
   let promptCache = null;
@@ -114,6 +115,7 @@ Output only clean rewritten text, no labels or prefixes.`;
 
       if (rewritten && rewritten !== original) {
         ORIGINAL_TEXT.set(node, original);
+        REWRITTEN_NODES.add(node);
         node.nodeValue = rewritten;
       }
 
@@ -149,12 +151,18 @@ Output only clean rewritten text, no labels or prefixes.`;
   // Revert softened text
   function revertPage() {
     let restored = 0;
-    for (const [node, original] of ORIGINAL_TEXT.entries()) {
-      node.nodeValue = original;
-      restored++;
+
+    for (const node of REWRITTEN_NODES) {
+      const original = ORIGINAL_TEXT.get(node);
+      if (original) {
+        node.nodeValue = original;
+        ORIGINAL_TEXT.delete(node);
+        restored++;
+      }
+      PROCESSED.delete(node);
     }
-    ORIGINAL_TEXT.clear();
-    PROCESSED.clear();
+
+    REWRITTEN_NODES.clear();
     TONE_APPLIED = false;
     console.log(`Restored ${restored} nodes.`);
     return { ok: true, restored };
