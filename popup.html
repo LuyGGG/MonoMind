@@ -7,21 +7,38 @@
   <!-- Origin Trial token -->
   <meta http-equiv="origin-trial" content="AsTOdLAXt/0rthNXcwBWF67CysqljArFiGCLDIBgstKYFQ7AxuruD2//4xcH4LiF88SQPqVVW8gqqNfasNY1Nw0AAABueyJvcmlnaW4iOiJjaHJvbWUtZXh0ZW5zaW9uOi8vZ2FoZ2NpZmtsaW1tYmthbXBnbmJjcG5ucGlvZ2JraXAiLCJmZWF0dXJlIjoiQUlSZXdyaXRlckFQSSIsImV4cGlyeSI6MTc2OTQ3MjAwMH0=">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta http-equiv="Content-Security-Policy"
+        content="script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline'">
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
-  <h3>MonoMind</h3>
+<body class="popup-root">
+  <header>
+    <h1>MonoMind</h1>
+    <p class="sub">Read calmer, feel safer.</p>
+  </header>
 
-  <div class="row" role="group" aria-label="Quick actions">
-    <button id="btn-simplify" title="Simplify page content for easier reading">Simplify Content</button>
-    <button id="btn-tone" title="Replace emotionally intense expressions with calmer ones">Soften Tone</button>
-    <button id="btn-calm" title="Reduce visual stimulation (animations, flashing, etc.)">Calm Mode</button>
-  </div>
+  <section class="btns">
+    <button id="btn-simplify" class="btn" disabled title="Placeholder">Summarize</button>
+    <button id="btn-tone" class="btn" disabled title="Placeholder">Soft Tone</button>
+    <button id="btnRemoveToggle" class="btn btn-primary">Remove Image, Popup and Animation</button>
+    <button id="btnOptimize" class="btn">Style Optimize</button>
+  </section>
 
-  <pre id="log" role="status" aria-live="polite"></pre>
-  <p class="muted">Read calmer, feel safer.</p>
+  <section class="result">
+    <div class="row">
+      <button id="btnApplyCss" class="btn btn-ok" disabled>Apply AI CSS</button>
+      <button id="btnUndoCss" class="btn btn-warn" disabled>Undo AI CSS</button>
+    </div>
+    <details id="details">
+      <summary>Analysis & Result</summary>
+      <pre id="log" class="log">No Result yet</pre>
+    </details>
+  </section>
 
+  <!-- Prompt helper moved to /api -->
+  <script src="api/prompt.js"></script>
+  <script src="features/optimize.js"></script>
   <script src="popup.js"></script>
   <script>
     // Automatically set document language based on browser preference

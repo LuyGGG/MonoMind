@@ -1,5 +1,5 @@
 // content.js
-// MonoMind unified content router for Simplify + Tone + Calm
+// MonoMind unified content router for Simplify + Tone + Calm + AI CSS
 // Fully MV3-safe (no inline scripts, no CSP violations)
 
 const ORIGIN_TRIAL_TOKEN =
@@ -30,11 +30,71 @@ async function ensureAI() {
   return { ok, status };
 }
 
+// --- In-page Toast 工具 ---
+function showToast(msg = "", ms = 2200) {
+  try {
+    let el = document.getElementById("__monomind_toast");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "__monomind_toast";
+      el.style.cssText = `
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: rgba(0,0,0,0.75);
+        color: #fff;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-size: 13px;
+        z-index: 999999;
+        transition: opacity 0.3s;
+        opacity: 0;
+      `;
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.opacity = "1";
+    clearTimeout(el.__t);
+    el.__t = setTimeout(() => {
+      el.style.opacity = "0";
+    }, ms);
+  } catch (err) {
+    console.warn("Toast failed:", err);
+  }
+}
+
+// --- AI CSS 应用 / 撤销 ---
+const STYLE_ID = "__monomind_ai_style__";
+
+function applyAICss(cssText) {
+  let s = document.getElementById(STYLE_ID);
+  if (!s) {
+    s = document.createElement("style");
+    s.id = STYLE_ID;
+    s.type = "text/css";
+    document.head.appendChild(s);
+  }
+  s.textContent = cssText || "";
+  showToast("AI 样式已应用");
+  return true;
+}
+
+function undoAICss() {
+  const s = document.getElementById(STYLE_ID);
+  if (s && s.parentNode) {
+    s.parentNode.removeChild(s);
+    showToast("AI 样式已撤销");
+    return true;
+  }
+  showToast("没有可撤销的 AI 样式");
+  return false;
+}
+
 // --- 消息路由 ---
 chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
   (async () => {
     try {
-      const { action } = req || {};
+      const { action, type } = req || {};
 
       // ---- Tone ----
       if (action?.startsWith("tone:")) {
@@ -60,7 +120,6 @@ chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
       // ---- Simplify ----
       if (action === "simplify_page") {
         try {
-          // 直接在页面上下文注入 simplify.js
           const script = document.createElement("script");
           script.src = chrome.runtime.getURL("features/simplify.js");
           script.onload = () => {
@@ -88,7 +147,26 @@ chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
         if (!window.MonoMindCalm?.toggleCalm)
           return sendResponse({ ok: false, error: "Calm not loaded" });
         const out = window.MonoMindCalm.toggleCalm();
+        showToast("Calm 模式已切换");
         return sendResponse({ ok: true, data: out });
+      }
+
+      // ---- CALM / CSS 控制（来自旧逻辑） ----
+      if (type === "CALM_TOGGLE_REMOVE") {
+        const r = window.__CalmPageImageFeature?.toggleRemove();
+        if (r?.mode === "removed") showToast(`移除了 ${r.count} 个元素`);
+        if (r?.mode === "restored") showToast(`恢复了 ${r.count} 个元素`);
+        return sendResponse({ ok: true, ...r });
+      }
+
+      if (type === "CALM_APPLY_CSS") {
+        const ok = applyAICss(req.css || "");
+        return sendResponse({ ok });
+      }
+
+      if (type === "CALM_UNDO_CSS") {
+        const ok = undoAICss();
+        return sendResponse({ ok });
       }
 
       // ---- Unknown ----
