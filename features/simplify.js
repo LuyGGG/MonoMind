@@ -36,7 +36,7 @@ window.MonoMindSimplify.summarizeToAlert = async function () {
   try {
     summarizer = await Summarizer.create({
       type: 'key-points',
-      format: 'markdown',     // Chrome returns bullet points in markdown
+      format: 'plain-text',     // Chrome returns bullet points in markdown
       length: 'short',        // 3 bullets (per Chrome’s implementation)
       expectedInputLanguages: ['en'],
       expectedContextLanguages: ['en'],
@@ -73,4 +73,5 @@ window.MonoMindSimplify.summarizeToAlert = async function () {
     alert("💥 Summarization failed:\n" + err.message);
     console.error(err);
   }
+  return true;
 };
