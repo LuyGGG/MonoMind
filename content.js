@@ -64,7 +64,7 @@ function showToast(msg = "", ms = 2200) {
   }
 }
 
-// --- AI CSS  ---
+// --- AI CSS ---
 const STYLE_ID = "__monomind_ai_style__";
 
 function applyAICss(cssText) {
@@ -161,6 +161,14 @@ chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
         const out = window.MonoMindCalm.toggleCalm();
         showToast("Calm mode toggled");
         return sendResponse({ ok: true, data: out });
+      }
+
+      // ---- CALM / CSS  ----
+      if (type === "CALM_TOGGLE_REMOVE") {
+        const r = window.__CalmPageImageFeature?.toggleRemove();
+        if (r?.mode === "removed") showToast(`Removed ${r.count} elements`);
+        if (r?.mode === "restored") showToast(`Restored ${r.count} elements`);
+        return sendResponse({ ok: true, ...r });
       }
 
       if (type === "CALM_APPLY_CSS") {
