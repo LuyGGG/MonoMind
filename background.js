@@ -1,5 +1,5 @@
-// bg.js
-// 提供 CAPTURE_VIEW：把当前标签页“可见的网页区域”截图为 dataURL(PNG)。
+// background.js
+// screenshot
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   (async () => {
@@ -21,7 +21,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       } catch (e) {
         sendResponse({ ok: false, error: String(e?.message || e) });
       }
-      return true; // 异步应答
+      return true; // asynchronous response
     }
   })();
   return true;

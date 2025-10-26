@@ -53,30 +53,34 @@ h1 {
 }
 
 /* Button color variants */
-.btn-primary {
+.btn-blue {
   background: #0ea5e9;
   color: #ffffff;
   border-color: #0284c7;
 }
-.btn-primary:hover {
+.btn-blue:hover {
   background: #0284c7;
 }
-.btn-ok {
+
+.btn-green {
   background: #10b981;
   color: #ffffff;
   border-color: #059669;
 }
-.btn-ok:hover {
+.btn-green:hover {
   background: #059669;
 }
-.btn-warn {
-  background: #f97316;
+
+.btn-purple {
+  background: #d8b4fe;
   color: #ffffff;
-  border-color: #ea580c;
+  border-color: #c084fc;
 }
-.btn-warn:hover {
-  background: #ea580c;
+.btn-purple:hover {
+  background: #c084fc;
 }
+
+
 
 /* Result section */
 .result .row {

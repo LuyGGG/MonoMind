@@ -14,10 +14,31 @@ document.addEventListener("DOMContentLoaded", () => {
 // ---------- Logging ----------
 function log(message, append = true) {
   if (!append) logEl.textContent = "";
-  const text = typeof message === "string" ? message : JSON.stringify(message, null, 2);
-  logEl.textContent += (logEl.textContent ? "\n" : "") + text;
-  detailsEl.open = true;
+
+  let text = "";
+
+  if (typeof message === "string") {
+    text = message;
+  } else if (message && typeof message === "object") {
+    if (message.error) {
+      text = `❌ ${message.error}`;
+    } else if (message.data) {
+      text = typeof message.data === "string"
+        ? message.data
+        : JSON.stringify(message.data);
+    } else if (message.ok) {
+      text = "✅ Done.";
+    } else {
+      text = "";
+    }
+  }
+
+  if (text) {
+    logEl.textContent += (logEl.textContent ? "\n" : "") + text;
+    detailsEl.open = true;
+  }
 }
+
 
 // ---------- Active tab ----------
 async function activeTab() {
