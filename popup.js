@@ -7,6 +7,10 @@ const detailsEl = $("#details");
 
 let lastCss = "";
 
+document.addEventListener("DOMContentLoaded", () => {
+  document.documentElement.lang = navigator.language || "en";
+});
+
 // ---------- Logging ----------
 function log(message, append = true) {
   if (!append) logEl.textContent = "";
@@ -57,7 +61,7 @@ async function send(actionOrType, payload = {}) {
         files: [
           "features/tone_rewriter.js",
           "features/simplify.js",
-          "features/calm.js",
+          //"features/calm.js", //no longer needed
           "content.js",
         ],
       });
@@ -202,7 +206,11 @@ async function checkSummarizerSupport() {
 async function triggerSimplify() {
   const btn = $("#btn-simplify");
   if (!btn) return;
+
   btn.disabled = true;
+  const originalText = btn.textContent;
+  btn.textContent = "Processing...";
+
   log("Running Simplify (Summarizer API)...", false);
   try {
     await send("simplify_page");

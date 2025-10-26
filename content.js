@@ -14,7 +14,9 @@ const ORIGIN_TRIAL_TOKEN =
       meta.httpEquiv = "origin-trial";
       meta.content = ORIGIN_TRIAL_TOKEN;
       document.head?.appendChild(meta);
-      console.log("✅ Origin Trial token injected for Rewriter/Summarizer API.");
+      console.log(
+        "✅ Origin Trial token injected for Rewriter/Summarizer API."
+      );
     }
   } catch (err) {
     console.warn("⚠️ Failed to inject origin trial token:", err);
@@ -23,8 +25,7 @@ const ORIGIN_TRIAL_TOKEN =
 
 // --- Chrome AI Summarizer 可用性检查 ---
 async function ensureAI() {
-  if (!("Summarizer" in self))
-    return { ok: false, status: "not_supported" };
+  if (!("Summarizer" in self)) return { ok: false, status: "not_supported" };
   const status = await Summarizer.availability();
   const ok = status === "available" || status === "downloadable";
   return { ok, status };
@@ -122,24 +123,35 @@ chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
         try {
           const script = document.createElement("script");
           script.src = chrome.runtime.getURL("features/simplify.js");
-          script.onload = () => {
-            if (window.MonoMindSimplify?.summarizeToAlert) {
-              window.MonoMindSimplify.summarizeToAlert();
-            } else {
-              console.warn("Simplify not initialized");
+
+          script.onload = async () => {
+            try {
+              const fn = window.MonoMindSimplify?.summarizeToAlert;
+
+              if (typeof fn !== "function") {
+                return sendResponse({
+                  ok: false,
+                  error: "Simplify not initialized",
+                });
+              }
+
+              // Call it and wait if it returns a Promise
+              const r = fn();
+              if (r && typeof r.then === "function") {
+                await r;
+              }
+
+              sendResponse({ ok: true, data: "Simplify completed" });
+            } catch (e) {
+              sendResponse({ ok: false, error: e?.message || String(e) });
             }
           };
-          (document.head || document.documentElement).appendChild(script);
-          script.remove();
 
-          return sendResponse({
-            ok: true,
-            data: "Simplify executed in page context",
-          });
+          (document.head || document.documentElement).appendChild(script);
         } catch (err) {
-          console.error("Simplify error:", err);
           return sendResponse({ ok: false, error: err.message });
         }
+        return true; // keep the channel open until sendResponse is called
       }
 
       // ---- Calm ----
