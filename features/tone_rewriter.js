@@ -1,5 +1,5 @@
 // MonoMind - Tone Rewriter (Final fixed version)
-// 修复：长文本未缓存导致 revert 后再 soften 不一致的问题
+// Fix: ensure long texts are cached so soften/revert remain consistent
 
 (() => {
   const DEFAULT_EXCLUDE = [
@@ -15,9 +15,9 @@
   let rewriterInstance = null;
   let promptCache = null;
 
-  // 防止缓存过多
+  // Prevent cache from growing too large
   let CACHE_COUNT = 0;
-  const CACHE_LIMIT = 3000; // 合理上限，防止内存过高
+  const CACHE_LIMIT = 3000; // reasonable upper bound to avoid high memory usage
 
   // --- DOM Traversal ---
   function* textNodeIterator(root, exclude = DEFAULT_EXCLUDE) {
@@ -78,12 +78,10 @@ Keep every other word in the sentence exactly the same. Do not change structure 
   // --- Cache helper ---
   function cacheRewrite(node, rewritten) {
     if (!rewritten) return;
-    // 不再限制长度，全部缓存
     if (CACHE_COUNT < CACHE_LIMIT) {
       REWRITTEN_CACHE.set(node, rewritten);
       CACHE_COUNT++;
     } else {
-      // 超过上限时，只更新，不计数
       REWRITTEN_CACHE.set(node, rewritten);
     }
   }
@@ -109,7 +107,7 @@ If no emotional words exist, return text unchanged.`;
       if (rewritten && rewritten !== original) {
         ORIGINAL_TEXT.set(node, original);
         node.nodeValue = rewritten;
-        REWRITTEN_CACHE.set(node, rewritten); // ✅ 一律缓存，不管多长
+  REWRITTEN_CACHE.set(node, rewritten); // Cache rewritten text unconditionally
         REWRITTEN_NODES.add(node);
         NODE_STATUS.set(node, "applied");
       } else {
@@ -144,7 +142,7 @@ If no emotional words exist, return text unchanged.`;
         continue;
       }
 
-      // 未缓存或新节点 → 重新 rewrite
+  // Not cached or new node -> rewrite
       await softenNode(node, rewriter, prompt);
       changed++;
       if (changed % 15 === 0) await new Promise(r => setTimeout(r, 20));
