@@ -1,37 +1,40 @@
 <!doctype html>
-<html lang="en">
+<html lang="">
 <head>
   <meta charset="utf-8" />
-  <title>CalmPage</title>
+  <title>MonoMind</title>
+
+  <!-- Origin Trial token -->
+  <meta http-equiv="origin-trial" content="AsTOdLAXt/0rthNXcwBWF67CysqljArFiGCLDIBgstKYFQ7AxuruD2//4xcH4LiF88SQPqVVW8gqqNfasNY1Nw0AAABueyJvcmlnaW4iOiJjaHJvbWUtZXh0ZW5zaW9uOi8vZ2FoZ2NpZmtsaW1tYmthbXBnbmJjcG5ucGlvZ2JraXAiLCJmZWF0dXJlIjoiQUlSZXdyaXRlckFQSSIsImV4cGlyeSI6MTc2OTQ3MjAwMH0=">
+
+
   <meta http-equiv="Content-Security-Policy"
         content="script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline'">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="popup-root">
   <header>
-    <h1>CalmPage</h1>
-    <p class="sub">Lower visual stimuli for calmer reading</p>
+    <h1>MonoMind</h1>
+    <p class="sub">Read calmer, feel safer.</p>
   </header>
 
   <section class="btns">
-    <button id="btnSummarize" class="btn" disabled title="Placeholder">📝 Summarize</button>
-    <button id="btnSoftTone" class="btn" disabled title="Placeholder">🌤️ Soft tone</button>
-    <button id="btnRemoveToggle" class="btn btn-primary">🧹 Remove image / popup / animation</button>
-    <button id="btnOptimize" class="btn">✨ Optimize (AI)</button>
+    <button id="btn-simplify" class="btn" disabled title="Placeholder">Summarize</button>
+    <button id="btn-tone" class="btn" disabled title="Placeholder">Soft Tone</button>
+    <button id="btnRemoveToggle" class="btn btn-primary">Remove Image, Popup and Animation</button>
+    <button id="btnOptimize" class="btn">Style Optimize</button>
   </section>
 
   <section class="result">
     <div class="row">
-      <button id="btnApplyCss" class="btn btn-ok" disabled>✅ Apply AI CSS</button>
-      <button id="btnUndoCss" class="btn btn-warn" disabled>↩️ Undo AI CSS</button>
+      <button id="btnApplyCss" class="btn btn-ok" disabled>Apply AI CSS</button>
+      <button id="btnUndoCss" class="btn btn-warn" disabled>Undo AI CSS</button>
     </div>
     <details id="details">
       <summary>Analysis & Result</summary>
-      <pre id="log" class="log">No result yet</pre>
+      <pre id="log" class="log">No Result yet</pre>
     </details>
   </section>
-
-  <footer class="foot">Note: Optimize analyzes the visible area only.</footer>
 
   <!-- Prompt helper moved to /api -->
   <script src="api/prompt.js"></script>
