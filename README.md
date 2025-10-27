@@ -107,13 +107,13 @@ The MonoMind icon will appear in your toolbar.
 - Modular architecture (MV3-safe, no inline scripts, full CSP compliance)  
 
 **Core files:**  
-manifest.json
-popup.html
-popup.js
-content.js
-api/prompt.js
-features/tone_rewriter.js
-features/simplify.js
-features/image.js
-features/optimize.js
-features/prompts/autism_friendly_prompt.txt
+- manifest.json
+- popup.html
+- popup.js
+- content.js
+- api/prompt.js
+- features/tone_rewriter.js
+- features/simplify.js
+- features/image.js
+- features/optimize.js
+- features/prompts/autism_friendly_prompt.txt
