@@ -6,6 +6,7 @@
 
   <!-- Origin Trial token -->
   <meta http-equiv="origin-trial" content="AsTOdLAXt/0rthNXcwBWF67CysqljArFiGCLDIBgstKYFQ7AxuruD2//4xcH4LiF88SQPqVVW8gqqNfasNY1Nw0AAABueyJvcmlnaW4iOiJjaHJvbWUtZXh0ZW5zaW9uOi8vZ2FoZ2NpZmtsaW1tYmthbXBnbmJjcG5ucGlvZ2JraXAiLCJmZWF0dXJlIjoiQUlSZXdyaXRlckFQSSIsImV4cGlyeSI6MTc2OTQ3MjAwMH0=">
+  <meta http-equiv="origin-trial" content="AmNhMYJqbvcYCqki1eQGARsSA42vYnvOxYTAZV+fX9FUlHCSTTRQ6ZxBePSQZ/ppmRpXIj4fAxmw7sRNmnU45wUAAAB7eyJvcmlnaW4iOiJjaHJvbWUtZXh0ZW5zaW9uOi8vamtvZGRoaGRla2FmZWNkaWFlZG1la2ZwZGNqZ2JiZGUiLCJmZWF0dXJlIjoiQUlQcm9tcHRBUElNdWx0aW1vZGFsSW5wdXQiLCJleHBpcnkiOjE3NzQzMTA0MDB9">
 
 
   <meta http-equiv="Content-Security-Policy"
@@ -19,22 +20,24 @@
   </header>
 
   <section class="btns">
-    <button id="btn-simplify" class="btn" disabled title="Placeholder">Summarize</button>
-    <button id="btn-tone" class="btn" disabled title="Placeholder">Soft Tone</button>
-    <button id="btnRemoveToggle" class="btn btn-primary">Remove Image, Popup and Animation</button>
-    <button id="btnOptimize" class="btn">Style Optimize</button>
+    <button id="btn-simplify" class="btn btn-green" disabled title="Placeholder">Summarize</button>
+    <button id="btn-tone" class="btn btn-purple" disabled title="Placeholder">Soft Tone</button>
+    <button id="btnRemoveToggle" class="btn btn-blue">Remove Image, Popup and Animation</button>
+    <button id="btnOptimize" class="btn" disabled>Style Optimize</button>
   </section>
 
   <section class="result">
-    <div class="row">
-      <button id="btnApplyCss" class="btn btn-ok" disabled>Apply AI CSS</button>
-      <button id="btnUndoCss" class="btn btn-warn" disabled>Undo AI CSS</button>
-    </div>
+    <!-- <div class="row">
+      <button id="btnApplyCss" class="btn" disabled>Apply AI CSS</button>
+      <button id="btnUndoCss" class="btn" disabled>Undo AI CSS</button>
+    </div> -->
     <details id="details">
       <summary>Analysis & Result</summary>
       <pre id="log" class="log">No Result yet</pre>
     </details>
   </section>
+
+  <footer class="foot">Note: Optimize is still under development..</footer>
 
   <!-- Prompt helper moved to /api -->
   <script src="api/prompt.js"></script>

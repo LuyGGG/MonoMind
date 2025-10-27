@@ -5,7 +5,7 @@
 const ORIGIN_TRIAL_TOKEN =
   "AsTOdLAXt/0rthNXcwBWF67CysqljArFiGCLDIBgstKYFQ7AxuruD2//4xcH4LiF88SQPqVVW8gqqNfasNY1Nw0AAABueyJvcmlnaW4iOiJjaHJvbWUtZXh0ZW5zaW9uOi8vZ2FoZ2NpZmtsaW1tYmthbXBnbmJjcG5ucGlvZ2JraXAiLCJmZWF0dXJlckFQSSIsImV4cGlyeSI6MTc2OTQ3MjAwMH0=";
 
-// --- Origin Trial Token 注入 ---
+// --- Origin Trial token injection ---
 (() => {
   try {
     const existing = document.querySelector('meta[http-equiv="origin-trial"]');
@@ -23,7 +23,7 @@ const ORIGIN_TRIAL_TOKEN =
   }
 })();
 
-// --- Chrome AI Summarizer 可用性检查 ---
+// --- Chrome AI Summarizer availability check ---
 async function ensureAI() {
   if (!("Summarizer" in self)) return { ok: false, status: "not_supported" };
   const status = await Summarizer.availability();
@@ -31,7 +31,7 @@ async function ensureAI() {
   return { ok, status };
 }
 
-// --- In-page Toast 工具 ---
+// --- In-page toast utility ---
 function showToast(msg = "", ms = 2200) {
   try {
     let el = document.getElementById("__monomind_toast");
@@ -64,7 +64,7 @@ function showToast(msg = "", ms = 2200) {
   }
 }
 
-// --- AI CSS 应用 / 撤销 ---
+// --- AI CSS ---
 const STYLE_ID = "__monomind_ai_style__";
 
 function applyAICss(cssText) {
@@ -76,7 +76,7 @@ function applyAICss(cssText) {
     document.head.appendChild(s);
   }
   s.textContent = cssText || "";
-  showToast("AI 样式已应用");
+  showToast("AI style applied");
   return true;
 }
 
@@ -84,14 +84,14 @@ function undoAICss() {
   const s = document.getElementById(STYLE_ID);
   if (s && s.parentNode) {
     s.parentNode.removeChild(s);
-    showToast("AI 样式已撤销");
+    showToast("AI style undone");
     return true;
   }
-  showToast("没有可撤销的 AI 样式");
+  showToast("No AI style to undo");
   return false;
 }
 
-// --- 消息路由 ---
+// --- message ---
 chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
   (async () => {
     try {
@@ -159,15 +159,15 @@ chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
         if (!window.MonoMindCalm?.toggleCalm)
           return sendResponse({ ok: false, error: "Calm not loaded" });
         const out = window.MonoMindCalm.toggleCalm();
-        showToast("Calm 模式已切换");
+        showToast("Calm mode toggled");
         return sendResponse({ ok: true, data: out });
       }
 
-      // ---- CALM / CSS 控制（来自旧逻辑） ----
+      // ---- CALM / CSS  ----
       if (type === "CALM_TOGGLE_REMOVE") {
         const r = window.__CalmPageImageFeature?.toggleRemove();
-        if (r?.mode === "removed") showToast(`移除了 ${r.count} 个元素`);
-        if (r?.mode === "restored") showToast(`恢复了 ${r.count} 个元素`);
+        if (r?.mode === "removed") showToast(`Removed ${r.count} elements`);
+        if (r?.mode === "restored") showToast(`Restored ${r.count} elements`);
         return sendResponse({ ok: true, ...r });
       }
 
