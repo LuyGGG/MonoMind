@@ -1,4 +1,4 @@
-# 🧠 MonoMind
+# MonoMind
 
 **MonoMind** is a Chrome extension designed with *autism-friendly principles* in mind.  
 It helps users reduce emotional and sensory overload while reading online, making web content calmer, clearer, and easier to process.
