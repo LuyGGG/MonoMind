@@ -82,7 +82,3 @@ features/
   ├── image.js
   ├── optimize.js
   └── prompts/
-
-
-
-<img width="468" height="635" alt="image" src="https://github.com/user-attachments/assets/1cd9788c-197b-42ec-95a2-806e60a62d66" />
